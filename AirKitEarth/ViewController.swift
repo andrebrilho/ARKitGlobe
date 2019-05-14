@@ -14,62 +14,49 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
     
+    var globe = SCNNode()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Set the view's delegate
         sceneView.delegate = self
         
-        // Show statistics such as fps and timing information
         sceneView.showsStatistics = true
         
-        // Create a new scene
-        let scene = SCNScene(named: "art.scnassets/ship.scn")!
+        let scene = SCNScene()
         
-        // Set the scene to the view
+        let position = SCNVector3(0, 0, -0.4)
+        globe = createAGlobe(atPosition: position)
+        scene.rootNode.addChildNode(globe)
+        
         sceneView.scene = scene
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
 
-        // Run the view's session
+        let shapeSpin = SCNAction.rotateBy(x: 0, y: 2 * .pi, z: 0, duration: 20)
+        let repeatSpin = SCNAction.repeatForever(shapeSpin)
+        globe.runAction(repeatSpin)
+        
         sceneView.session.run(configuration)
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
+    func createAGlobe(atPosition: SCNVector3) -> SCNNode {
         
-        // Pause the view's session
-        sceneView.session.pause()
+        let sphereGlobe = SCNSphere(radius: 0.2)
+        let material = SCNMaterial()
+        
+        material.diffuse.contents = UIImage(named: "art.scnassets/earth.jpeg")
+        sphereGlobe.firstMaterial = material
+        
+        let sphereGlobeNode = SCNNode(geometry: sphereGlobe)
+        sphereGlobeNode.position = atPosition
+
+        return sphereGlobeNode
+        
     }
 
-    // MARK: - ARSCNViewDelegate
-    
-/*
-    // Override to create and configure nodes for anchors added to the view's session.
-    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        let node = SCNNode()
-     
-        return node
-    }
-*/
-    
-    func session(_ session: ARSession, didFailWithError error: Error) {
-        // Present an error message to the user
-        
-    }
-    
-    func sessionWasInterrupted(_ session: ARSession) {
-        // Inform the user that the session has been interrupted, for example, by presenting an overlay
-        
-    }
-    
-    func sessionInterruptionEnded(_ session: ARSession) {
-        // Reset tracking and/or remove existing anchors if consistent tracking is required
-        
-    }
 }
